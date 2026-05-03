@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAZENOTABOT — Geometry Dash Levels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Chakra+Petch:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a14;
+    --bg-2: #12122a;
+    --grid: rgba(120, 90, 255, 0.08);
+    --grid-strong: rgba(120, 90, 255, 0.16);
+    --text: #f0f0ff;
+    --text-dim: #9090b8;
+
+    --easy:    #00d4ff;
+    --normal:  #00e060;
+    --hard:    #ffd400;
+    --harder:  #ff7a00;
+    --insane:  #ff2a55;
+    --demon:   #b400ff;
+    --auto:    #d0d0d0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Chakra Petch', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Animated grid floor background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-position: center center;
+    z-index: -2;
+    animation: gridScroll 8s linear infinite;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(255, 42, 85, 0.18), transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(0, 212, 255, 0.18), transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(180, 0, 255, 0.10), transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  @keyframes gridScroll {
+    from { background-position: 0 0; }
+    to { background-position: 48px 48px; }
+  }
+
+  /* ==== HEADER ==== */
+  .hero {
+    position: relative;
+    padding: 80px 24px 60px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .cube {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #00d4ff 0%, #b400ff 100%);
+    border: 4px solid #fff;
+    border-radius: 8px;
+    box-shadow:
+      0 0 30px #00d4ff,
+      0 0 60px rgba(180, 0, 255, 0.6),
+      inset 0 0 20px rgba(255, 255, 255, 0.3);
+    animation: cubePulse 2s ease-in-out infinite, cubeBob 3s ease-in-out infinite;
+    position: relative;
+  }
+
+  .cube::before, .cube::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 2px;
+  }
+  .cube::before { top: 14px; left: 14px; width: 16px; height: 16px; }
+  .cube::after  { top: 14px; right: 14px; width: 16px; height: 16px; }
+
+  @keyframes cubePulse {
+    0%, 100% { box-shadow: 0 0 30px #00d4ff, 0 0 60px rgba(180, 0, 255, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.3); }
+    50% { box-shadow: 0 0 50px #00d4ff, 0 0 100px rgba(180, 0, 255, 0.9), inset 0 0 25px rgba(255, 255, 255, 0.5); }
+  }
+
+  @keyframes cubeBob {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(8deg); }
+  }
+
+  h1 {
+    font-family: 'Russo One', sans-serif;
+    font-size: clamp(2.5rem, 7vw, 5rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, #00d4ff, #b400ff, #ff2a55, #ffd400, #00e060, #00d4ff);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: rainbowSlide 6s linear infinite;
+    text-shadow: 0 0 40px rgba(180, 0, 255, 0.4);
+    line-height: 1;
+  }
+
+  @keyframes rainbowSlide {
+    from { background-position: 0% 50%; }
+    to { background-position: 300% 50%; }
+  }
+
+  .subtitle {
+    margin-top: 16px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .profile-link {
+    display: inline-block;
+    margin-top: 24px;
+    padding: 10px 24px;
+    font-family: 'Russo One', sans-serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #0a0a14;
+    background: linear-gradient(90deg, #00d4ff, #b400ff);
+    border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+    transition: all 0.25s ease;
+    border: 2px solid #fff;
+  }
+
+  .profile-link:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 0 50px rgba(180, 0, 255, 0.7);
+  }
+
+  /* ==== STATS BAR ==== */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 40px auto 0;
+    max-width: 800px;
+  }
+
+  .stat {
+    flex: 1;
+    min-width: 140px;
+    background: rgba(20, 20, 50, 0.6);
+    border: 2px solid rgba(120, 90, 255, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+
+  .stat:hover {
+    border-color: #00d4ff;
+    box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+    transform: translateY(-4px);
+  }
+
+  .stat-num {
+    font-family: 'Russo One', sans-serif;
+    font-size: 2.4rem;
+    color: #00d4ff;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+  }
+
+  .stat-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    margin-top: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ==== FILTERS ==== */
+  .filters {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 40px 24px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .filter-btn {
+    font-family: 'Russo One', sans-serif;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 20px;
+    background: rgba(20, 20, 50, 0.7);
+    color: var(--text);
+    border: 2px solid rgba(120, 90, 255, 0.4);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .filter-btn:hover {
+    transform: translateY(-2px);
+    border-color: #fff;
+  }
+
+  .filter-btn.active {
+    background: #fff;
+    color: #0a0a14;
+    border-color: #fff;
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.5);
+  }
+
+  /* ==== LEVEL GRID ==== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 24px;
+    padding: 20px 24px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(30, 30, 70, 0.8), rgba(15, 15, 35, 0.9));
+    border: 2px solid rgba(120, 90, 255, 0.3);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+  }
+
+  .card:hover {
+    transform: translateY(-8px) scale(1.01);
+    border-color: var(--card-color, #fff);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 30px var(--card-color, rgba(180, 0, 255, 0.5));
+  }
+
+  .card-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+    overflow: hidden;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .card:hover .card-image img {
+    transform: scale(1.08);
+  }
+
+  /* Placeholder image when no screenshot yet */
+  .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      linear-gradient(135deg, rgba(180, 0, 255, 0.3), rgba(0, 212, 255, 0.3)),
+      repeating-linear-gradient(45deg, #1a1a3a 0 20px, #222244 20px 40px);
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    text-align: center;
+    padding: 16px;
+    letter-spacing: 0.1em;
+  }
+
+  .difficulty-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 14px;
+    background: var(--card-color);
+    color: #000;
+    font-family: 'Russo One', sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-radius: 999px;
+    border: 2px solid #fff;
+    box-shadow: 0 0 20px var(--card-color);
+  }
+
+  .screenshot-count {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .card-body {
+    padding: 18px 20px 20px;
+  }
+
+  .card-title {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 6px;
+    color: var(--card-color, #fff);
+    text-shadow: 0 0 12px var(--card-color, rgba(255, 255, 255, 0.3));
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 14px;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card-desc {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  /* ==== LIGHTBOX ==== */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.92);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .lightbox.open {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .lightbox-content {
+    position: relative;
+    max-width: 95vw;
+    max-height: 90vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .lightbox img {
+    max-width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+    border: 3px solid var(--card-color, #fff);
+    border-radius: 8px;
+    box-shadow: 0 0 60px var(--card-color, rgba(255, 255, 255, 0.5));
+  }
+
+  .lightbox-info {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .lightbox-title {
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.6rem;
+    text-transform: uppercase;
+    color: var(--card-color, #fff);
+  }
+
+  .lightbox-counter {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-top: 8px;
+    letter-spacing: 0.15em;
+  }
+
+  .lightbox-close, .lightbox-nav {
+    position: absolute;
+    background: rgba(20, 20, 50, 0.8);
+    color: #fff;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-family: 'Russo One', sans-serif;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+  }
+
+  .lightbox-close:hover, .lightbox-nav:hover {
+    background: #fff;
+    color: #000;
+    transform: scale(1.1);
+  }
+
+  .lightbox-close { top: 24px; right: 24px; }
+  .lightbox-nav.prev { top: 50%; left: 24px; transform: translateY(-50%); }
+  .lightbox-nav.next { top: 50%; right: 24px; transform: translateY(-50%); }
+  .lightbox-nav.prev:hover { transform: translateY(-50%) scale(1.1); }
+  .lightbox-nav.next:hover { transform: translateY(-50%) scale(1.1); }
+
+  /* ==== EMPTY STATE ==== */
+  .empty {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--text-dim);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Spike decorations */
+  .spikes {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 24px;
+    margin-bottom: -2px;
+  }
+
+  .spike {
+    width: 0;
+    height: 0;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 20px solid #00d4ff;
+    filter: drop-shadow(0 0 8px #00d4ff);
+    opacity: 0.6;
+  }
+
+  .spike:nth-child(2n)   { border-bottom-color: #b400ff; filter: drop-shadow(0 0 8px #b400ff); }
+  .spike:nth-child(3n)   { border-bottom-color: #ff2a55; filter: drop-shadow(0 0 8px #ff2a55); }
+  .spike:nth-child(5n)   { border-bottom-color: #ffd400; filter: drop-shadow(0 0 8px #ffd400); }
+  .spike:nth-child(7n)   { border-bottom-color: #00e060; filter: drop-shadow(0 0 8px #00e060); }
+
+  @media (max-width: 600px) {
+    .hero { padding: 50px 20px 40px; }
+    .stat-num { font-size: 1.8rem; }
+    .grid { padding: 20px 16px 60px; gap: 16px; }
+    .lightbox-close { top: 16px; right: 16px; }
+    .lightbox-nav.prev { left: 8px; }
+    .lightbox-nav.next { right: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="cube"></div>
+  <h1>MAZENOTABOT</h1>
+  <p class="subtitle">★ Custom Geometry Dash Creator ★</p>
+
+  <a class="profile-link" href="https://gdbrowser.com/profile/MAZENOTABOT" target="_blank" rel="noopener">
+    View GD Profile →
+  </a>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">30</div>
+      <div class="stat-label">Stars</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">8</div>
+      <div class="stat-label">Moons</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">1,427</div>
+      <div class="stat-label">Diamonds</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">10</div>
+      <div class="stat-label">Coins</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">3</div>
+      <div class="stat-label">User Coins</div>
+    </div>
+  </div>
+</header>
+
+<div class="spikes" id="spikes"></div>
+
+<div class="filters" id="filters"></div>
+
+<main class="grid" id="grid"></main>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightbox-close">✕</button>
+  <button class="lightbox-nav prev" id="lightbox-prev">‹</button>
+  <button class="lightbox-nav next" id="lightbox-next">›</button>
+  <div class="lightbox-content">
+    <img id="lightbox-img" src="" alt="">
+    <div class="lightbox-info">
+      <div class="lightbox-title" id="lightbox-title"></div>
+      <div class="lightbox-counter" id="lightbox-counter"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ==========================================================
+     ★★★  ADD YOUR SON'S LEVELS HERE  ★★★
+     ----------------------------------------------------------
+     For each level, fill in:
+       - name:        the level title
+       - difficulty:  one of: easy, normal, hard, harder, insane,
+                      demon, auto
+       - stars:       number (0-10ish)
+       - coins:       number (0-3)
+       - length:      "Tiny", "Short", "Medium", "Long", or "XL"
+       - description: short blurb about the level
+       - screenshots: list of image paths or URLs.
+                      Drop image files in the same folder as this
+                      HTML file and just put the filename, e.g.
+                      "screenshot1.png", or paste a full URL.
+                      Leave the list empty [] for a placeholder.
+     ========================================================== */
+
+  const LEVELS = [
+    // No levels added yet! Once you have the level names from
+    // https://gdbrowser.com/search/mazenotabot?user
+    // (click the levels icon on his profile), add them like this:
+    //
+    // {
+    //   name: "Level Name Here",
+    //   difficulty: "hard",
+    //   stars: 0,
+    //   coins: 0,
+    //   length: "Medium",
+    //   description: "What the level is about",
+    //   screenshots: ["screenshot1.png"]
+    // },
+  ];
+
+  /* ========== END OF EDITABLE SECTION ========== */
+
+  const DIFFICULTY_INFO = {
+    easy:    { label: "Easy",    color: "var(--easy)" },
+    normal:  { label: "Normal",  color: "var(--normal)" },
+    hard:    { label: "Hard",    color: "var(--hard)" },
+    harder:  { label: "Harder",  color: "var(--harder)" },
+    insane:  { label: "Insane",  color: "var(--insane)" },
+    demon:   { label: "Demon",   color: "var(--demon)" },
+    auto:    { label: "Auto",    color: "var(--auto)" }
+  };
+
+  // Build spike decorations
+  const spikesEl = document.getElementById('spikes');
+  for (let i = 0; i < 30; i++) {
+    const s = document.createElement('div');
+    s.className = 'spike';
+    spikesEl.appendChild(s);
+  }
+
+  // Build stats — values now reflect his real GD profile, set in HTML directly
+
+  // Build filter buttons
+  const filtersEl = document.getElementById('filters');
+  const presentDifficulties = [...new Set(LEVELS.map(l => l.difficulty))];
+  const filterOptions = ['all', ...Object.keys(DIFFICULTY_INFO).filter(d => presentDifficulties.includes(d))];
+  let activeFilter = 'all';
+
+  filterOptions.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-btn' + (opt === 'all' ? ' active' : '');
+    btn.textContent = opt === 'all' ? 'All Levels' : DIFFICULTY_INFO[opt].label;
+    btn.dataset.filter = opt;
+    if (opt !== 'all') btn.style.color = DIFFICULTY_INFO[opt].color;
+    btn.addEventListener('click', () => {
+      activeFilter = opt;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === opt));
+      renderGrid();
+    });
+    filtersEl.appendChild(btn);
+  });
+
+  // Build grid
+  const gridEl = document.getElementById('grid');
+
+  function renderGrid() {
+    gridEl.innerHTML = '';
+    const filtered = activeFilter === 'all' ? LEVELS : LEVELS.filter(l => l.difficulty === activeFilter);
+
+    if (filtered.length === 0) {
+      gridEl.innerHTML = '<div class="empty">★ Levels coming soon ★<br><br>Open this file in a text editor and add levels to the LEVELS list near the bottom!</div>';
+      return;
+    }
+
+    filtered.forEach((level, idx) => {
+      const realIdx = LEVELS.indexOf(level);
+      const diff = DIFFICULTY_INFO[level.difficulty] || DIFFICULTY_INFO.normal;
+
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.style.setProperty('--card-color', diff.color);
+
+      const hasShots = level.screenshots && level.screenshots.length > 0;
+      const mainShot = hasShots ? level.screenshots[0] : null;
+
+      card.innerHTML = `
+        <div class="card-image">
+          ${mainShot
+            ? `<img src="${mainShot}" alt="${level.name}" onerror="this.parentElement.innerHTML='<div class=\\'placeholder\\'>Image not found:<br>${mainShot}</div>'">`
+            : `<div class="placeholder">No screenshot yet<br>★ Add one in the file ★</div>`}
+          <div class="difficulty-badge">${diff.label}</div>
+          ${hasShots && level.screenshots.length > 1
+            ? `<div class="screenshot-count">+${level.screenshots.length - 1} more</div>`
+            : ''}
+        </div>
+        <div class="card-body">
+          <h2 class="card-title">${level.name}</h2>
+          <div class="card-meta">
+            <span>★ ${level.stars || 0}</span>
+            <span>◆ ${level.coins || 0}/3</span>
+            <span>⏱ ${level.length || '—'}</span>
+          </div>
+          <p class="card-desc">${level.description || ''}</p>
+        </div>
+      `;
+
+      if (hasShots) {
+        card.addEventListener('click', () => openLightbox(realIdx, 0));
+      }
+
+      gridEl.appendChild(card);
+    });
+  }
+
+  renderGrid();
+
+  // Lightbox logic
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxTitle = document.getElementById('lightbox-title');
+  const lightboxCounter = document.getElementById('lightbox-counter');
+
+  let currentLevel = 0;
+  let currentShot = 0;
+
+  function openLightbox(levelIdx, shotIdx) {
+    currentLevel = levelIdx;
+    currentShot = shotIdx;
+    updateLightbox();
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function updateLightbox() {
+    const level = LEVELS[currentLevel];
+    const diff = DIFFICULTY_INFO[level.difficulty] || DIFFICULTY_INFO.normal;
+    lightbox.style.setProperty('--card-color', diff.color);
+    lightboxImg.src = level.screenshots[currentShot];
+    lightboxTitle.textContent = level.name;
+    lightboxTitle.style.color = diff.color;
+    lightboxCounter.textContent = `${currentShot + 1} / ${level.screenshots.length}`;
+    document.getElementById('lightbox-prev').style.display = level.screenshots.length > 1 ? 'flex' : 'none';
+    document.getElementById('lightbox-next').style.display = level.screenshots.length > 1 ? 'flex' : 'none';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) closeLightbox(); });
+
+  document.getElementById('lightbox-prev').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const len = LEVELS[currentLevel].screenshots.length;
+    currentShot = (currentShot - 1 + len) % len;
+    updateLightbox();
+  });
+
+  document.getElementById('lightbox-next').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const len = LEVELS[currentLevel].screenshots.length;
+    currentShot = (currentShot + 1) % len;
+    updateLightbox();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
+    if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
+  });
+</script>
+
+</body>
+</html>

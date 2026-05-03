@@ -1,0 +1,15 @@
+# Ignore everything in Downloads by default
+*
+
+# Except the site files
+!.gitignore
+!geometry_dash_levels.html
+!index.html
+
+# Allow screenshot images added for the site
+!*.png
+!*.jpg
+!*.jpeg
+!*.gif
+!*.webp
+!*.avif
