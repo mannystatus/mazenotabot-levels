@@ -3,6 +3,7 @@
 
 # Except the site files
 !.gitignore
+!README.md
 !geometry_dash_levels.html
 !index.html
 
