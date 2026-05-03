@@ -1,9 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-XXXXXXX');</script>
+<!-- End Google Tag Manager -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAZENOTABOT — Geometry Dash Levels</title>
+<title>MAZENOTABOT — Geometry Dash Custom Levels</title>
+<meta name="description" content="Explore custom Geometry Dash levels created by MAZENOTABOT. Browse levels by difficulty, view screenshots, and check out in-game stats.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://mannystatus.github.io/mazenotabot-levels/geometry_dash_levels.html">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="MAZENOTABOT — Geometry Dash Custom Levels">
+<meta property="og:description" content="Explore custom Geometry Dash levels created by MAZENOTABOT. Browse by difficulty and view screenshots.">
+<meta property="og:url" content="https://mannystatus.github.io/mazenotabot-levels/geometry_dash_levels.html">
+<meta property="og:site_name" content="MAZENOTABOT Levels">
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MAZENOTABOT — Geometry Dash Custom Levels">
+<meta name="twitter:description" content="Explore custom Geometry Dash levels created by MAZENOTABOT. Browse by difficulty and view screenshots.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Chakra+Petch:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -504,9 +524,61 @@
     .lightbox-nav.prev { left: 8px; }
     .lightbox-nav.next { right: 8px; }
   }
+
+  /* ==== PRIVACY NOTICE ==== */
+  #privacy-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(10, 10, 20, 0.97);
+    border-top: 2px solid rgba(120, 90, 255, 0.5);
+    backdrop-filter: blur(16px);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    z-index: 2000;
+  }
+
+  #privacy-banner p {
+    font-family: 'Chakra Petch', sans-serif;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    flex: 1;
+    min-width: 200px;
+  }
+
+  #privacy-banner a {
+    color: #00d4ff;
+    text-decoration: underline;
+  }
+
+  #privacy-accept {
+    font-family: 'Russo One', sans-serif;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 22px;
+    background: linear-gradient(90deg, #00d4ff, #b400ff);
+    color: #0a0a14;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+  }
+
+  #privacy-accept:hover { opacity: 0.85; }
 </style>
 </head>
 <body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XXXXXXX"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 
 <header class="hero">
   <div class="cube"></div>
@@ -749,6 +821,24 @@
     if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
     if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
   });
+</script>
+
+<!-- Privacy Notice Banner -->
+<div id="privacy-banner">
+  <p>This site uses cookies via Google Tag Manager to understand how visitors interact with it. No personal data is sold or shared. By continuing to browse you agree to this use. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Learn more</a></p>
+  <button id="privacy-accept">Got it</button>
+</div>
+
+<script>
+  (function() {
+    if (localStorage.getItem('privacy-accepted')) {
+      document.getElementById('privacy-banner').style.display = 'none';
+    }
+    document.getElementById('privacy-accept').addEventListener('click', function() {
+      localStorage.setItem('privacy-accepted', '1');
+      document.getElementById('privacy-banner').style.display = 'none';
+    });
+  })();
 </script>
 
 </body>
