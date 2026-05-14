@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KPWBG2KF');</script>
+<!-- End Google Tag Manager -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Elevator Game 🛗 — MAZENOTABOT</title>
+<meta name="description" content="Play the Elevator Game! Ride floors, complete missions, find the secret floor, and rack up stars. A mini-game by MAZENOTABOT.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://mannystatus.github.io/mazenotabot-levels/elevator_game.html">
+<!-- Google AdSense -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6138840929831792"
+     crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Nunito', sans-serif; background: #0d1220; overflow: hidden; }
+
+/* Back link */
+#back-link {
+  position: fixed; top: 10px; left: 10px; z-index: 500;
+  font-family: 'Orbitron', sans-serif; font-size: 9px; font-weight: 700;
+  color: #88ccff; background: rgba(10,20,40,0.85);
+  border: 1px solid #2a5a8a; border-radius: 8px;
+  padding: 6px 10px; text-decoration: none; letter-spacing: 1px;
+  transition: border-color 0.2s, color 0.2s;
+  backdrop-filter: blur(6px);
+}
+#back-link:hover { color: #fff; border-color: #4a9adf; }
+
+#game-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 10px; height: 100dvh;
+  background: linear-gradient(160deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+  position: relative; overflow: hidden;
+}
+#game-wrap::before {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, rgba(255,255,255,0.8), transparent),
+    radial-gradient(1px 1px at 35% 6%,  rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 65% 12%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1px 1px at 88% 25%, rgba(255,255,255,0.4), transparent);
+  pointer-events: none;
+}
+
+/* TOP ROW */
+#top-row {
+  display: flex; gap: 8px; width: 100%; max-width: 500px;
+  flex: 1; min-height: 0; align-items: stretch;
+}
+
+/* BUILDING */
+#building-wrap { width: 88px; flex-shrink: 0; display: flex; flex-direction: column; }
+#building {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  display: flex; flex-direction: column;
+  border: 2px solid #4a6fa5; border-radius: 6px 6px 0 0;
+  box-shadow: 0 0 20px rgba(74,111,165,0.4);
+  scrollbar-width: none;
+}
+#building::-webkit-scrollbar { display: none; }
+
+.floor {
+  height: 50px; min-height: 50px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-bottom: 1px solid #2a3f5f; position: relative;
+  background: #1a2a4a; transition: background 0.3s;
+}
+.floor:last-child { border-bottom: none; }
+.floor.active-floor { background: #1e3a6e; box-shadow: inset 0 0 14px rgba(100,180,255,0.18); }
+.floor-label { font-family: 'Orbitron', sans-serif; font-size: 8px; color: #4a7fc1; position: absolute; left: 4px; top: 4px; font-weight: 700; }
+.floor-emoji { position: absolute; left: 4px; bottom: 3px; font-size: 9px; opacity: 0.7; }
+.floor-shaft { position: absolute; left: 50%; transform: translateX(-50%); width: 50px; height: 48px; overflow: visible; }
+.shaft-doors { width: 50px; height: 48px; display: flex; position: relative; }
+.shaft-door-l, .shaft-door-r { width: 50%; height: 100%; background: #0a1624; border: 1px solid #2a3f5f; }
+.shaft-door-l { border-right: none; border-radius: 2px 0 0 2px; }
+.shaft-door-r { border-left: none; border-radius: 0 2px 2px 0; }
+.floor-indicator { position: absolute; top: 3px; right: 3px; width: 5px; height: 5px; border-radius: 50%; background: #1a2a4a; border: 1px solid #2a3f5f; }
+.floor-indicator.lit { background: #ffdd44; box-shadow: 0 0 4px #ffdd44; }
+
+/* SECRET FLOOR */
+.floor.secret-floor { background: #1a0a2e; border-color: #6a2aaa; }
+.floor.secret-floor .floor-label { color: #aa66ff; }
+.floor.secret-floor .shaft-door-l,
+.floor.secret-floor .shaft-door-r { background: #0d0520; border-color: #4a1a7a; }
+.floor.secret-floor.active-floor { background: #2a0a4e; box-shadow: inset 0 0 18px rgba(150,80,255,0.3); }
+
+/* ELEVATOR CAR */
+#elevator-car {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  width: 50px; height: 48px;
+  background: linear-gradient(180deg, #2a4a7f, #1e3560);
+  border: 2px solid #4a7fc1; border-radius: 3px;
+  overflow: hidden; z-index: 10;
+  box-shadow: 0 0 12px rgba(74,127,193,0.7);
+  transition: border-color 0.5s, box-shadow 0.5s;
+}
+#elevator-car.secret-mode {
+  border-color: #aa66ff;
+  box-shadow: 0 0 18px rgba(150,80,255,0.8);
+  background: linear-gradient(180deg, #3a1a6a, #1e0a40);
+}
+#car-inside {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 1; gap: 1px;
+}
+#car-door-l, #car-door-r {
+  position: absolute; top: 0; height: 100%; width: 50%;
+  z-index: 3;
+  transition: transform 0.65s cubic-bezier(0.42, 0, 0.18, 1);
+  will-change: transform;
+}
+#car-door-l {
+  left: 0;
+  background: linear-gradient(160deg, #4a80c4 0%, #2a558a 50%, #1e3f6e 100%);
+  border-right: 1px solid rgba(100,180,255,0.5);
+  transform: translateX(0%);
+}
+#car-door-r {
+  right: 0;
+  background: linear-gradient(200deg, #4a80c4 0%, #2a558a 50%, #1e3f6e 100%);
+  border-left: 1px solid rgba(100,180,255,0.5);
+  transform: translateX(0%);
+}
+#car-door-l::before, #car-door-r::before {
+  content: ''; position: absolute;
+  top: 20%; width: 2px; height: 60%;
+  background: rgba(120,200,255,0.35); border-radius: 2px;
+}
+#car-door-l::before { right: 5px; }
+#car-door-r::before { left: 5px; }
+#car-door-l.open { transform: translateX(-100%); }
+#car-door-r.open { transform: translateX(100%); }
+#elevator-car.secret-mode #car-door-l,
+#elevator-car.secret-mode #car-door-r {
+  background: linear-gradient(160deg, #8844cc 0%, #4a1a7a 50%, #2a0a50 100%);
+}
+#elevator-car.secret-mode #car-door-l { border-right-color: rgba(180,100,255,0.5); }
+#elevator-car.secret-mode #car-door-r { border-left-color:  rgba(180,100,255,0.5); }
+#car-person { font-size: 15px; line-height: 1; }
+#car-floor-display { font-family: 'Orbitron', sans-serif; font-size: 7px; color: #88ddff; background: rgba(0,0,0,0.45); padding: 1px 3px; border-radius: 2px; }
+
+/* RIGHT COLUMN */
+#right-col { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+#panel-display { background: #000; border: 2px solid #2a5a8a; border-radius: 8px; padding: 6px 10px; text-align: center; flex-shrink: 0; transition: border-color 0.4s; }
+#panel-display.secret-disp { border-color: #7a3aaa; }
+.disp-label { font-family: 'Orbitron', sans-serif; font-size: 7px; color: #3a6a9a; letter-spacing: 2px; }
+.disp-number { font-family: 'Orbitron', sans-serif; font-size: 28px; color: #ff4400; font-weight: 700; line-height: 1; text-shadow: 0 0 10px rgba(255,68,0,0.8); transition: color 0.4s, text-shadow 0.4s; }
+.disp-number.secret-num { color: #cc88ff; text-shadow: 0 0 12px rgba(180,100,255,0.9); }
+.disp-name { font-family: 'Orbitron', sans-serif; font-size: 9px; color: #4a9adf; letter-spacing: 1px; }
+
+#score-area { display: flex; justify-content: space-around; background: rgba(0,0,0,0.3); border: 1px solid #1a3a5a; border-radius: 8px; padding: 5px; flex-shrink: 0; }
+.score-item { text-align: center; }
+.s-label { font-family: 'Orbitron', sans-serif; font-size: 6px; color: #3a6a9a; letter-spacing: 0.5px; display: block; }
+.s-value { font-family: 'Orbitron', sans-serif; font-size: 15px; color: #88ffcc; font-weight: 700; }
+
+#mission-box { background: rgba(255,200,0,0.08); border: 1px solid rgba(255,200,0,0.3); border-radius: 8px; padding: 7px; text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; transition: background 0.4s, border-color 0.4s; }
+#mission-box.secret-mission { background: rgba(150,80,255,0.1); border-color: rgba(150,80,255,0.4); }
+.m-label { font-family: 'Orbitron', sans-serif; font-size: 6px; color: #aa8800; letter-spacing: 1px; display: block; }
+.m-text { font-size: 11px; color: #ffdd88; font-weight: 700; margin-top: 3px; line-height: 1.3; }
+
+/* MUSIC BADGE */
+#music-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-family: 'Orbitron', sans-serif; font-size: 8px;
+  color: #88ffcc; background: rgba(0,80,60,0.7);
+  border: 1px solid #22aa66; border-radius: 10px;
+  padding: 3px 7px; letter-spacing: 1px;
+  display: none; z-index: 50;
+  animation: badge-pulse 2s ease-in-out infinite alternate;
+}
+#music-badge.visible { display: block; }
+@keyframes badge-pulse { from { opacity: 0.7; } to { opacity: 1; } }
+
+/* BOTTOM PANEL */
+#panel {
+  display: flex; flex-direction: column; align-items: center; gap: 7px;
+  padding: 10px; background: linear-gradient(180deg, #1e2a3e, #151f30);
+  border: 2px solid #3a5a8a; border-radius: 14px;
+  width: 100%; max-width: 500px; flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+#btn-grid {
+  display: grid; grid-template-columns: repeat(5,1fr);
+  gap: 6px; width: 100%; padding: 8px;
+  background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid #1a3a5a;
+}
+.floor-btn {
+  aspect-ratio: 1; width: 100%; border-radius: 50%; border: none; cursor: pointer;
+  font-family: 'Orbitron', sans-serif; font-size: clamp(11px,3.5vw,15px); font-weight: 700;
+  transition: all 0.12s; outline: none;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  background: radial-gradient(circle at 35% 35%, #2a4a7a, #0d1f3a); color: #6aaad8;
+  box-shadow: 0 4px 0 #061224, 0 4px 8px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 2px #1a3a5a;
+}
+.floor-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 #061224, 0 2px 4px rgba(0,0,0,0.6), 0 0 0 2px #1a3a5a; }
+.floor-btn.btn-lit {
+  background: radial-gradient(circle at 35% 35%, #ff9920, #cc6600) !important; color: #fff !important;
+  box-shadow: 0 4px 0 #7a3300,0 4px 12px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.3),0 0 0 2px #ff8800,0 0 18px rgba(255,150,0,0.5) !important;
+  animation: btn-pulse 1s ease-in-out infinite alternate;
+}
+.floor-btn.btn-current {
+  background: radial-gradient(circle at 35% 35%, #22bb55, #115522) !important; color: #fff !important;
+  box-shadow: 0 4px 0 #062a12,0 4px 12px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.2),0 0 0 2px #22aa44,0 0 14px rgba(50,200,80,0.4) !important;
+}
+.floor-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+@keyframes btn-pulse {
+  from { box-shadow: 0 4px 0 #7a3300,0 4px 12px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.3),0 0 0 2px #ff8800,0 0 12px rgba(255,150,0,0.4); }
+  to   { box-shadow: 0 4px 0 #7a3300,0 4px 12px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.3),0 0 0 2px #ff8800,0 0 26px rgba(255,180,0,0.7); }
+}
+
+#btn-secret {
+  background: radial-gradient(circle at 35% 35%, #3a1a6a, #1a0a30) !important; color: #aa66ff !important;
+  box-shadow: 0 4px 0 #0a0020,0 4px 8px rgba(0,0,0,0.7),inset 0 1px 0 rgba(180,100,255,0.2), 0 0 0 2px #4a1a8a !important;
+  font-size: clamp(9px,2.8vw,12px) !important;
+}
+#btn-secret.btn-current {
+  background: radial-gradient(circle at 35% 35%, #8833cc, #44118a) !important; color: #fff !important;
+  box-shadow: 0 4px 0 #1a0040,0 4px 12px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,200,255,0.2),0 0 0 2px #9944dd,0 0 18px rgba(180,80,255,0.5) !important;
+}
+
+#ctrl-row { display: flex; gap: 6px; width: 100%; }
+.door-btn {
+  flex: 1; height: 46px; border-radius: 10px; border: none; cursor: pointer;
+  font-size: 22px; transition: all 0.12s; outline: none;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+#btn-open  { background: linear-gradient(180deg,#2a7a3a,#1a5228); box-shadow: 0 4px 0 #0a2a14,inset 0 1px 0 rgba(255,255,255,0.1); color:#88ffaa; }
+#btn-close { background: linear-gradient(180deg,#7a2a2a,#521a1a); box-shadow: 0 4px 0 #2a0a0a,inset 0 1px 0 rgba(255,255,255,0.1); color:#ffaaaa; }
+.door-btn:active { transform: translateY(3px); filter: brightness(0.85); }
+.door-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+#bottom-row { display: flex; gap: 6px; width: 100%; }
+#btn-bell {
+  flex: 1; height: 46px; border-radius: 10px; border: none; cursor: pointer;
+  background: linear-gradient(180deg,#5a4a1a,#3a2a08); color: #ffdd44; font-size: 16px;
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  box-shadow: 0 4px 0 #1a1204,inset 0 1px 0 rgba(255,255,255,0.1);
+  transition: all 0.12s; -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+#btn-bell:active { transform: translateY(3px); filter: brightness(0.85); }
+
+#btn-emergency {
+  width: 82px; height: 46px; border-radius: 10px; border: 3px solid #ff2200; cursor: pointer;
+  background: linear-gradient(180deg,#cc1a00,#8a0000); color: #fff; font-size: 11px;
+  font-family: 'Orbitron', sans-serif; font-weight: 700;
+  box-shadow: 0 4px 0 #440000,0 0 12px rgba(255,34,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: all 0.12s; letter-spacing: 0.5px;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; line-height: 1.2;
+}
+#btn-emergency:active { transform: translateY(3px); }
+#btn-emergency.alarming { animation: emg-flash 0.4s ease-in-out infinite alternate; }
+@keyframes emg-flash {
+  from { background: linear-gradient(180deg,#cc1a00,#8a0000); box-shadow: 0 4px 0 #440000,0 0 12px rgba(255,34,0,0.4); }
+  to   { background: linear-gradient(180deg,#ff5500,#cc1a00); box-shadow: 0 4px 0 #440000,0 0 32px rgba(255,80,0,0.95); }
+}
+
+#status-bar {
+  width: 100%; background: rgba(0,0,0,0.5);
+  border: 1px solid #2a5a8a; border-radius: 20px;
+  padding: 6px 12px; font-family: 'Orbitron', sans-serif;
+  font-size: 9px; color: #6aaad8; letter-spacing: 1px; text-align: center;
+}
+#status-bar.emergency { color: #ff6644; border-color: #ff2200; animation: status-emg 0.5s ease infinite alternate; }
+#status-bar.secret { color: #cc88ff; border-color: #7a3aaa; }
+@keyframes status-emg { from { opacity: 1; } to { opacity: 0.45; } }
+
+@keyframes shake {
+  0%,100% { transform: translateX(-50%); }
+  25% { transform: translateX(calc(-50% - 1px)); }
+  75% { transform: translateX(calc(-50% + 1px)); }
+}
+#elevator-car.moving { animation: shake 0.14s ease-in-out infinite; }
+@keyframes ding-flash { 0%,100% { background: #000; } 50% { background: #ffee66; } }
+@keyframes secret-flash { 0%,100% { background: #000; } 50% { background: #5500aa; } }
+#panel-display.ding { animation: ding-flash 0.18s ease 3; }
+#panel-display.secret-ding { animation: secret-flash 0.25s ease 4; }
+
+.confetti-piece {
+  position: absolute; width: 8px; height: 8px; border-radius: 2px;
+  animation: confetti-fall 1.5s ease-in forwards; pointer-events: none; z-index: 100;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(230px) rotate(720deg); opacity: 0; }
+}
+
+#emg-overlay { display: none; position: absolute; inset: 0; z-index: 200; background: rgba(120,0,0,0.22); pointer-events: none; animation: emg-ov 0.5s ease infinite alternate; }
+#emg-overlay.active { display: block; }
+@keyframes emg-ov { from { opacity: 0; } to { opacity: 1; } }
+
+#secret-overlay { display: none; position: absolute; inset: 0; z-index: 5; background: radial-gradient(ellipse at 50% 50%, rgba(120,40,220,0.18), transparent 70%); pointer-events: none; animation: sec-ov 3s ease-in-out infinite alternate; }
+#secret-overlay.active { display: block; }
+@keyframes sec-ov { from { opacity: 0.3; } to { opacity: 1; } }
+
+/* PASSCODE MODAL */
+#passcode-modal {
+  display: none; position: absolute; inset: 0; z-index: 300;
+  background: rgba(5,0,20,0.88);
+  align-items: center; justify-content: center;
+  flex-direction: column;
+}
+#passcode-modal.open { display: flex; }
+#passcode-box {
+  background: linear-gradient(180deg, #120826, #0a0418);
+  border: 2px solid #7a3aaa; border-radius: 16px; padding: 20px 16px 16px;
+  width: min(320px, 90vw);
+  box-shadow: 0 0 40px rgba(150,60,255,0.4);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+#passcode-title { font-family: 'Orbitron', sans-serif; font-size: 13px; color: #cc88ff; letter-spacing: 2px; text-align: center; }
+#passcode-subtitle { font-family: 'Nunito', sans-serif; font-size: 11px; color: #886699; text-align: center; line-height: 1.4; }
+#passcode-display {
+  background: #000; border: 2px solid #4a1a8a; border-radius: 8px; padding: 10px 20px;
+  font-family: 'Orbitron', sans-serif; font-size: 26px; color: #cc88ff; letter-spacing: 8px;
+  min-width: 160px; text-align: center; text-shadow: 0 0 10px rgba(180,100,255,0.7);
+  min-height: 52px; display: flex; align-items: center; justify-content: center;
+}
+#passcode-display.wrong { animation: wrong-shake 0.4s ease; border-color: #ff2200; color: #ff6644; }
+@keyframes wrong-shake {
+  0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+}
+#passcode-keypad { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; width: 100%; }
+.pc-key {
+  height: 52px; border-radius: 10px; border: none; cursor: pointer;
+  font-family: 'Orbitron', sans-serif; font-size: 18px; font-weight: 700;
+  transition: all 0.1s; outline: none;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  background: radial-gradient(circle at 35% 35%, #2a0a5a, #100228); color: #aa66ff;
+  box-shadow: 0 4px 0 #050010,0 3px 8px rgba(0,0,0,0.7),inset 0 1px 0 rgba(180,100,255,0.15),0 0 0 1px #3a1a6a;
+}
+.pc-key:active { transform: translateY(3px); box-shadow: 0 1px 0 #050010,0 1px 3px rgba(0,0,0,0.7),0 0 0 1px #3a1a6a; }
+.pc-key.pc-clear { background: radial-gradient(circle at 35% 35%, #3a1a1a, #180808); color: #ff8888; box-shadow: 0 4px 0 #100005,0 3px 8px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,100,100,0.1),0 0 0 1px #5a1a1a; }
+.pc-key.pc-enter { background: radial-gradient(circle at 35% 35%, #1a3a1a, #081808); color: #88ff88; box-shadow: 0 4px 0 #001000,0 3px 8px rgba(0,0,0,0.7),inset 0 1px 0 rgba(100,255,100,0.1),0 0 0 1px #1a5a1a; }
+#passcode-hint { font-family: 'Nunito', sans-serif; font-size: 10px; color: #553366; text-align: center; }
+#passcode-cancel {
+  margin-top: 2px; background: none; border: 1px solid #3a1a5a; border-radius: 8px;
+  color: #664488; font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+  padding: 7px 24px; cursor: pointer; transition: all 0.1s; -webkit-tap-highlight-color: transparent;
+}
+#passcode-cancel:active { filter: brightness(1.3); }
+
+/* PRIVACY BANNER */
+#privacy-banner {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 600;
+  background: rgba(10,10,20,0.97); border-top: 2px solid rgba(74,111,165,0.5);
+  backdrop-filter: blur(16px); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+#privacy-banner p { font-family: 'Nunito', sans-serif; font-size: 0.75rem; color: #7090a8; flex: 1; min-width: 180px; }
+#privacy-banner a { color: #88ccff; text-decoration: underline; }
+#privacy-accept {
+  font-family: 'Orbitron', sans-serif; font-size: 0.65rem; font-weight: 700;
+  letter-spacing: 0.08em; padding: 8px 18px;
+  background: linear-gradient(90deg, #4a7fc1, #7a3aaa); color: #fff;
+  border: none; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  transition: opacity 0.2s;
+}
+#privacy-accept:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-KPWBG2KF"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+<a id="back-link" href="geometry_dash_levels.html">← MAZENOTABOT</a>
+
+<div id="game-wrap">
+  <div id="emg-overlay"></div>
+  <div id="secret-overlay"></div>
+  <div id="music-badge">♪ NOW PLAYING</div>
+
+  <!-- PASSCODE MODAL -->
+  <div id="passcode-modal">
+    <div id="passcode-box">
+      <div id="passcode-title">🔒 SECRET FLOOR</div>
+      <div id="passcode-subtitle">Enter the 4-digit passcode<br>to access this restricted area</div>
+      <div id="passcode-display">_</div>
+      <div id="passcode-keypad">
+        <button class="pc-key" data-d="1">1</button>
+        <button class="pc-key" data-d="2">2</button>
+        <button class="pc-key" data-d="3">3</button>
+        <button class="pc-key" data-d="4">4</button>
+        <button class="pc-key" data-d="5">5</button>
+        <button class="pc-key" data-d="6">6</button>
+        <button class="pc-key" data-d="7">7</button>
+        <button class="pc-key" data-d="8">8</button>
+        <button class="pc-key" data-d="9">9</button>
+        <button class="pc-key pc-clear" data-action="clear">⌫</button>
+        <button class="pc-key" data-d="0">0</button>
+        <button class="pc-key pc-enter" data-action="enter">OK</button>
+      </div>
+      <div id="passcode-hint">Psst... the code is hidden somewhere 🕵️</div>
+      <button id="passcode-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <div id="top-row">
+    <div id="building-wrap"><div id="building"></div></div>
+    <div id="right-col">
+      <div id="panel-display">
+        <div class="disp-label">FLOOR</div>
+        <div class="disp-number" id="disp-num">1</div>
+        <div class="disp-name" id="disp-name">LOBBY</div>
+      </div>
+      <div id="score-area">
+        <div class="score-item"><span class="s-label">TRIPS</span><div class="s-value" id="score-trips">0</div></div>
+        <div class="score-item"><span class="s-label">STARS</span><div class="s-value" id="score-stars">0</div></div>
+        <div class="score-item"><span class="s-label">RESCUES</span><div class="s-value" id="score-rescues">0</div></div>
+      </div>
+      <div id="mission-box">
+        <span class="m-label">MISSION</span>
+        <div class="m-text" id="mission-text">Press a floor!</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel">
+    <div id="btn-grid"></div>
+    <div id="ctrl-row">
+      <button class="door-btn" id="btn-open">◀▶</button>
+      <button class="door-btn" id="btn-close">▶◀</button>
+    </div>
+    <div id="bottom-row">
+      <button id="btn-bell">🔔 DING!</button>
+      <button id="btn-emergency">🚨<br>EMRG</button>
+    </div>
+    <div id="status-bar">DOORS OPEN ✓ WELCOME!</div>
+  </div>
+</div>
+
+<!-- Privacy Notice Banner -->
+<div id="privacy-banner">
+  <p>This site uses cookies via Google Tag Manager. No personal data is sold or shared. By continuing you agree to this use. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Learn more</a></p>
+  <button id="privacy-accept">Got it</button>
+</div>
+
+<script>
+/* ── AUDIO ── */
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, type, dur, vol=0.26, delay=0) {
+  try {
+    const ctx=getAudio(), o=ctx.createOscillator(), g=ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type=type; o.frequency.setValueAtTime(freq, ctx.currentTime+delay);
+    g.gain.setValueAtTime(0, ctx.currentTime+delay);
+    g.gain.linearRampToValueAtTime(vol, ctx.currentTime+delay+0.01);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+delay+dur);
+    o.start(ctx.currentTime+delay); o.stop(ctx.currentTime+delay+dur+0.05);
+  } catch(e){}
+}
+function soundDing()     { tone(1046,'sine',0.5,0.35,0); tone(1318,'sine',0.4,0.22,0.06); tone(1046,'sine',0.55,0.18,0.2); }
+function soundDoorMove() { tone(160,'sawtooth',0.75,0.065,0); }
+function soundFloorStep(){ tone(55,'sine',0.12,0.15,0); }
+function soundBell()     { [880,1108,880,1318].forEach((f,i)=>tone(f,'sine',0.32,0.2,i*0.08)); }
+function soundSuccess()  { [523,659,784,1046].forEach((f,i)=>tone(f,'sine',0.3,0.22,i*0.1)); }
+function soundKeyPress() { tone(880,'sine',0.08,0.1,0); }
+function soundWrong()    { tone(200,'sawtooth',0.3,0.2,0); tone(150,'sawtooth',0.3,0.18,0.12); }
+function soundUnlock()   { [523,659,784,1046,1318,1568].forEach((f,i)=>tone(f,'sine',0.25,0.18,i*0.07)); setTimeout(()=>tone(1568,'sine',0.6,0.3,0),500); }
+function soundSecretDing(){ tone(523,'sine',0.8,0.3,0); tone(659,'sine',0.7,0.18,0.05); tone(784,'sine',1.0,0.12,0.15); tone(392,'sine',0.6,0.1,0.3); }
+
+let emgInterval=null;
+function soundEmgStart(){ const a=()=>{ tone(880,'square',0.22,0.14,0); tone(660,'square',0.22,0.14,0.28); }; a(); emgInterval=setInterval(a,560); }
+function soundEmgStop()  { if(emgInterval){clearInterval(emgInterval);emgInterval=null;} tone(523,'sine',0.3,0.22,0); tone(659,'sine',0.3,0.2,0.15); tone(784,'sine',0.38,0.22,0.3); }
+
+/* ── ELEVATOR MUSIC ── */
+let musicPlaying = false;
+let musicLoopTimer = null;
+let musicActiveGains = [];
+
+const BPM = 118, BEAT = 60/BPM;
+const MELODY = [
+  [523.25,1,0],[587.33,0.5,1],[659.25,0.5,1.5],[698.46,1,2],[783.99,1,3],
+  [880,0.5,4],[830.61,0.5,4.5],[783.99,1,5],[698.46,0.5,6],[659.25,0.5,6.5],
+  [587.33,1,7],[523.25,0.5,8],[493.88,0.5,8.5],[440,1,9],[392,1,10],
+  [349.23,0.5,11],[392,0.5,11.5],[440,0.5,12],[493.88,0.5,12.5],[523.25,2,13],
+  [659.25,0.75,15],[587.33,0.25,15.75],[523.25,0.5,16],[493.88,0.5,16.5],[440,1,17],[392,1,18],
+  [349.23,0.5,19],[392,0.5,19.5],[440,1,20],[523.25,0.5,21],[587.33,0.5,21.5],
+  [659.25,1,22],[698.46,0.5,23],[659.25,0.5,23.5],[587.33,1,24],[523.25,1,25],
+  [493.88,0.5,26],[440,0.5,26.5],[392,0.5,27],[349.23,0.5,27.5],[523.25,2,28],
+];
+const LOOP_BEATS = 30;
+const CHORDS = [
+  [261.63,4,0],[293.66,4,0],[349.23,4,0],[261.63,4,4],[329.63,4,4],[392,4,4],
+  [220,4,8],[261.63,4,8],[329.63,4,8],[196,4,12],[246.94,4,12],[293.66,4,12],
+  [261.63,4,15],[293.66,4,15],[349.23,4,15],[196,4,19],[246.94,4,19],[293.66,4,19],
+  [220,4,22],[277.18,4,22],[329.63,4,22],[261.63,4,26],[329.63,4,26],[392,4,26],
+];
+const BASS = [
+  [130.81,0.5,0],[130.81,0.5,1],[146.83,0.5,2],[130.81,0.5,3],
+  [130.81,0.5,4],[130.81,0.5,5],[146.83,0.5,6],[130.81,0.5,7],
+  [110,0.5,8],[110,0.5,9],[123.47,0.5,10],[110,0.5,11],
+  [98,0.5,12],[98,0.5,13],[110,0.5,14],[98,0.5,15],
+  [130.81,0.5,15],[130.81,0.5,16],[146.83,0.5,17],[130.81,0.5,18],
+  [98,0.5,19],[98,0.5,20],[110,0.5,21],[98,0.5,22],
+  [110,0.5,22],[110,0.5,23],[123.47,0.5,24],[110,0.5,25],
+  [130.81,0.5,26],[130.81,0.5,27],[146.83,0.5,28],[130.81,0.5,29],
+];
+
+function scheduleMusicLoop(startTime) {
+  if (!musicPlaying) return;
+  const ctx = getAudio();
+  const loopGain = ctx.createGain();
+  loopGain.gain.setValueAtTime(0.18, startTime);
+  loopGain.connect(ctx.destination);
+  musicActiveGains.push(loopGain);
+  const loopEnd = startTime + LOOP_BEATS * BEAT;
+
+  function schedNote(freq, type, durBeats, startBeat, vol) {
+    try {
+      const o=ctx.createOscillator(), g=ctx.createGain();
+      o.connect(g); g.connect(loopGain);
+      o.type=type; o.frequency.value=freq;
+      const t0=startTime+startBeat*BEAT, dur=durBeats*BEAT;
+      if(t0<ctx.currentTime-0.01) return;
+      g.gain.setValueAtTime(0,t0); g.gain.linearRampToValueAtTime(vol,t0+0.02);
+      g.gain.setValueAtTime(vol,t0+dur-0.04); g.gain.linearRampToValueAtTime(0,t0+dur);
+      o.start(t0); o.stop(t0+dur+0.05);
+    } catch(e){}
+  }
+  MELODY.forEach(([f,d,off])=>schedNote(f,'sine',d*0.88,off,0.55));
+  CHORDS.forEach(([f,d,off])=>schedNote(f,'triangle',d,off,0.22));
+  BASS.forEach(([f,d,off])=>schedNote(f,'sine',d*0.85,off,0.48));
+  for(let b=0;b<LOOP_BEATS;b++){
+    [0,0.5].forEach(sub=>{
+      try {
+        const t0=startTime+(b+sub)*BEAT;
+        if(t0<ctx.currentTime-0.01) return;
+        const buf=ctx.createBuffer(1,Math.floor(ctx.sampleRate*0.04),ctx.sampleRate);
+        const data=buf.getChannelData(0);
+        for(let i=0;i<data.length;i++) data[i]=(Math.random()*2-1);
+        const src=ctx.createBufferSource(); src.buffer=buf;
+        const filt=ctx.createBiquadFilter(); filt.type='highpass'; filt.frequency.value=6000;
+        const g=ctx.createGain();
+        src.connect(filt); filt.connect(g); g.connect(loopGain);
+        g.gain.setValueAtTime(0.06,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+0.04);
+        src.start(t0); src.stop(t0+0.05);
+      } catch(e){}
+    });
+  }
+  loopGain.gain.setValueAtTime(0.18,loopEnd-0.1);
+  loopGain.gain.linearRampToValueAtTime(0,loopEnd);
+  const msUntil=(loopEnd-ctx.currentTime)*1000-150;
+  musicLoopTimer=setTimeout(()=>{
+    if(!musicPlaying) return;
+    try { scheduleMusicLoop(getAudio().currentTime+0.05); } catch(e){}
+  }, Math.max(50,msUntil));
+}
+
+function startMusic() {
+  if(musicPlaying) return;
+  musicPlaying=true; musicActiveGains=[];
+  try { scheduleMusicLoop(getAudio().currentTime+0.15); document.getElementById('music-badge').classList.add('visible'); } catch(e){}
+}
+function stopMusic() {
+  musicPlaying=false;
+  if(musicLoopTimer){clearTimeout(musicLoopTimer);musicLoopTimer=null;}
+  try {
+    const ctx=getAudio(), now=ctx.currentTime;
+    musicActiveGains.forEach(g=>{try{g.gain.cancelScheduledValues(now);g.gain.setValueAtTime(0,now);}catch(e){}});
+  } catch(e){}
+  musicActiveGains=[];
+  document.getElementById('music-badge').classList.remove('visible');
+}
+
+/* ── GAME DATA ── */
+const SECRET_ID = 'B';
+const FLOORS = [
+  {num:10,name:'PENTHOUSE',emoji:'🌆'},{num:9,name:'SPA',emoji:'🧘'},
+  {num:8,name:'GYM',emoji:'🏋️'},{num:7,name:'CINEMA',emoji:'🎬'},
+  {num:6,name:'ROOF',emoji:'🌃'},{num:5,name:'HOTEL',emoji:'🏨'},
+  {num:4,name:'FOOD',emoji:'🍕'},{num:3,name:'TOYS',emoji:'🧸'},
+  {num:2,name:'OFFICE',emoji:'💼'},{num:1,name:'LOBBY',emoji:'🏠'},
+  {num:'B',name:'SECRET',emoji:'🔮',secret:true},
+];
+const MISSIONS = [
+  {floor:10,text:'🌆 VIP to the Penthouse!'},{floor:9,text:'🧘 Spa appointment on 9!'},
+  {floor:8,text:'🏋️ Gym session on floor 8!'},{floor:7,text:'🎬 Movie night on floor 7!'},
+  {floor:6,text:'🌃 Rooftop party time!'},{floor:5,text:'🏨 Hotel guests on floor 5!'},
+  {floor:4,text:'🍕 Pizza delivery, floor 4!'},{floor:3,text:'🧸 Deliver toys to floor 3!'},
+  {floor:2,text:'💼 Office workers on 2!'},{floor:1,text:'🏠 Back to the lobby!'},
+];
+const PASSCODE='1028';
+let secretUnlocked=false;
+
+/* ── STATE ── */
+let currentFloor=1, targetQueue=[], isMoving=false, doorsOpen=true;
+let trips=0, stars=0, rescues=0;
+let currentMission=null, missionActive=false, emergencyActive=false;
+
+/* ── DOM ── */
+const building=document.getElementById('building');
+const btnGrid=document.getElementById('btn-grid');
+const dispNum=document.getElementById('disp-num');
+const dispName=document.getElementById('disp-name');
+const statusBar=document.getElementById('status-bar');
+const btnOpen=document.getElementById('btn-open');
+const btnClose=document.getElementById('btn-close');
+const panelDisplay=document.getElementById('panel-display');
+const missionEl=document.getElementById('mission-text');
+const missionBox=document.getElementById('mission-box');
+const emgOverlay=document.getElementById('emg-overlay');
+const secretOverlay=document.getElementById('secret-overlay');
+const btnEmg=document.getElementById('btn-emergency');
+const pcModal=document.getElementById('passcode-modal');
+const pcDisplay=document.getElementById('passcode-display');
+
+/* ── BUILD FLOORS ── */
+FLOORS.forEach(f=>{
+  const el=document.createElement('div');
+  el.className='floor'+(f.secret?' secret-floor':''); el.id=`floor-${f.num}`;
+  el.innerHTML=`<span class="floor-label">${f.secret?'?':'F'+f.num}</span>
+    <span class="floor-emoji">${f.secret?'✦':f.emoji}</span>
+    <div class="floor-shaft" id="sw-${f.num}">
+      <div class="shaft-doors"><div class="shaft-door-l"></div><div class="shaft-door-r"></div></div>
+      <div class="floor-indicator" id="ind-${f.num}"></div>
+    </div>`;
+  building.appendChild(el);
+});
+
+/* ── BUILD BUTTONS ── */
+const regularNums=[10,9,8,7,6,5,4,3,2,1];
+regularNums.forEach(n=>{
+  const btn=document.createElement('button');
+  btn.className='floor-btn'; btn.id=`btn-f${n}`; btn.textContent=n;
+  btn.addEventListener('click',()=>pressFloor(n));
+  btnGrid.appendChild(btn);
+});
+for(let i=0;i<2;i++){const sp=document.createElement('div');sp.style.cssText='aspect-ratio:1;';btnGrid.appendChild(sp);}
+const secretBtn=document.createElement('button');
+secretBtn.className='floor-btn'; secretBtn.id='btn-secret'; secretBtn.textContent='?';
+secretBtn.style.fontSize='clamp(13px,4vw,18px)';
+secretBtn.addEventListener('click',()=>pressFloor(SECRET_ID));
+btnGrid.appendChild(secretBtn);
+for(let i=0;i<2;i++){const sp=document.createElement('div');sp.style.cssText='aspect-ratio:1;';btnGrid.appendChild(sp);}
+const allNums=[...regularNums,SECRET_ID];
+
+/* ── ELEVATOR CAR ── */
+const car=document.createElement('div'); car.id='elevator-car';
+car.innerHTML=`
+  <div id="car-inside"><div id="car-person">🧍</div><div id="car-floor-display">FL 1</div></div>
+  <div id="car-door-l" class="open"></div>
+  <div id="car-door-r" class="open"></div>`;
+
+function placeCar(n){ document.getElementById(`sw-${n}`).appendChild(car); }
+placeCar(1); setFloorActive(1);
+
+function scrollToFloor(n){
+  const el=document.getElementById(`floor-${n}`);
+  if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+/* ── HELPERS ── */
+function isSecretFloor(n){ return n===SECRET_ID; }
+
+function setFloorActive(n){
+  FLOORS.forEach(f=>document.getElementById(`floor-${f.num}`).classList.toggle('active-floor',f.num===n));
+  const f=FLOORS.find(x=>x.num===n);
+  const secret=isSecretFloor(n)&&secretUnlocked;
+  if(secret){
+    dispNum.textContent='✦'; dispNum.className='disp-number secret-num';
+    dispName.textContent='SECRET LAB';
+    panelDisplay.classList.add('secret-disp');
+    document.getElementById('car-floor-display').textContent='FL ?';
+    car.classList.add('secret-mode');
+    secretOverlay.classList.add('active');
+    missionBox.classList.add('secret-mission');
+  } else {
+    dispNum.textContent=n; dispNum.className='disp-number';
+    dispName.textContent=f?f.name:'';
+    panelDisplay.classList.remove('secret-disp');
+    document.getElementById('car-floor-display').textContent=`FL ${n}`;
+    car.classList.remove('secret-mode');
+    secretOverlay.classList.remove('active');
+    missionBox.classList.remove('secret-mission');
+  }
+  scrollToFloor(n);
+}
+
+function setStatus(t,mode='normal'){
+  statusBar.textContent=t;
+  statusBar.classList.remove('emergency','secret');
+  if(mode==='emergency') statusBar.classList.add('emergency');
+  if(mode==='secret')    statusBar.classList.add('secret');
+}
+
+function updateBtns(){
+  allNums.forEach(n=>{
+    const id=n===SECRET_ID?'btn-secret':`btn-f${n}`;
+    const b=document.getElementById(id); if(!b) return;
+    b.classList.remove('btn-lit','btn-current');
+    if(n===currentFloor&&!isMoving) b.classList.add('btn-current');
+    if(targetQueue.includes(n)) b.classList.add('btn-lit');
+    b.disabled=emergencyActive;
+  });
+  btnOpen.disabled=doorsOpen||isMoving||emergencyActive;
+  btnClose.disabled=!doorsOpen||isMoving||emergencyActive;
+}
+
+/* ── DOOR ANIMATION ── */
+function getDoorEls(){
+  return { dl:document.getElementById('car-door-l'), dr:document.getElementById('car-door-r') };
+}
+
+async function animateDoorsOpen(){
+  const {dl,dr}=getDoorEls();
+  soundDoorMove();
+  dl.style.transition='none'; dr.style.transition='none';
+  dl.style.transform='translateX(0%)'; dr.style.transform='translateX(0%)';
+  void dl.offsetWidth;
+  dl.style.transition='transform 0.65s cubic-bezier(0.42,0,0.18,1)';
+  dr.style.transition='transform 0.65s cubic-bezier(0.42,0,0.18,1)';
+  dl.style.transform='translateX(-100%)';
+  dr.style.transform='translateX(100%)';
+  doorsOpen=true; updateBtns();
+  await sleep(750);
+}
+
+async function animateDoorsClose(){
+  const {dl,dr}=getDoorEls();
+  soundDoorMove();
+  dl.style.transition='none'; dr.style.transition='none';
+  dl.style.transform='translateX(-100%)'; dr.style.transform='translateX(100%)';
+  void dl.offsetWidth;
+  dl.style.transition='transform 0.65s cubic-bezier(0.42,0,0.18,1)';
+  dr.style.transition='transform 0.65s cubic-bezier(0.42,0,0.18,1)';
+  dl.style.transform='translateX(0%)';
+  dr.style.transform='translateX(0%)';
+  doorsOpen=false; updateBtns();
+  await sleep(750);
+}
+
+function ding(secret=false){
+  if(secret){soundSecretDing();}else{soundDing();}
+  panelDisplay.classList.remove('ding','secret-ding'); void panelDisplay.offsetWidth;
+  panelDisplay.classList.add(secret?'secret-ding':'ding');
+  setTimeout(()=>panelDisplay.classList.remove('ding','secret-ding'),900);
+}
+
+function confetti(purple=false){
+  const cols=purple?['#cc44ff','#8800ff','#dd88ff','#ff44cc','#ffffff','#aa00dd']:['#ff4444','#ffdd44','#44ff88','#4488ff','#ff88dd','#ffaa22'];
+  const wrap=document.getElementById('game-wrap');
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div'); p.className='confetti-piece';
+    p.style.cssText=`left:${wrap.offsetWidth/2+(Math.random()-.5)*130}px;top:40px;background:${cols[i%cols.length]};`;
+    wrap.appendChild(p); setTimeout(()=>p.remove(),1600);
+  }
+}
+
+function checkMission(n){
+  if(missionActive&&currentMission&&currentMission.floor===n){
+    stars++; document.getElementById('score-stars').textContent=stars;
+    missionActive=false; setStatus('MISSION COMPLETE! +1 STAR ⭐');
+    soundSuccess(); confetti(); setTimeout(assignMission,2500);
+  }
+}
+
+function assignMission(){
+  if(emergencyActive) return;
+  const m=MISSIONS[Math.floor(Math.random()*MISSIONS.length)];
+  currentMission=m; missionActive=true; missionEl.textContent=m.text;
+  missionBox.classList.remove('secret-mission');
+}
+setTimeout(assignMission,1500);
+
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ── PASSCODE ── */
+let pcInput='';
+function updatePcDisplay(){ pcDisplay.textContent=pcInput.length?pcInput.padEnd(4,'_').split('').join(' '):'_'; }
+function openPasscodeModal(){ pcInput=''; updatePcDisplay(); pcDisplay.classList.remove('wrong'); pcModal.classList.add('open'); }
+function closePasscodeModal(){ pcModal.classList.remove('open'); }
+
+pcModal.querySelectorAll('.pc-key[data-d]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    if(pcInput.length>=4) return;
+    getAudio(); soundKeyPress(); pcInput+=btn.dataset.d; updatePcDisplay();
+    if(pcInput.length===4) setTimeout(checkPasscode,200);
+  });
+});
+pcModal.querySelector('[data-action="clear"]').addEventListener('click',()=>{ getAudio(); soundKeyPress(); pcInput=pcInput.slice(0,-1)||''; updatePcDisplay(); });
+pcModal.querySelector('[data-action="enter"]').addEventListener('click',()=>{ if(pcInput.length>0){getAudio();checkPasscode();} });
+document.getElementById('passcode-cancel').addEventListener('click',closePasscodeModal);
+
+function checkPasscode(){
+  if(pcInput===PASSCODE){
+    secretUnlocked=true; closePasscodeModal(); soundUnlock(); confetti(true);
+    const sfl=document.getElementById(`floor-${SECRET_ID}`);
+    sfl.querySelector('.floor-label').textContent='✦B';
+    sfl.querySelector('.floor-emoji').textContent='🔮';
+    secretBtn.textContent='✦B';
+    setStatus('🔮 SECRET FLOOR UNLOCKED!','secret');
+    setTimeout(()=>actuallyMoveToSecret(),600);
+  } else {
+    soundWrong();
+    pcDisplay.classList.remove('wrong'); void pcDisplay.offsetWidth; pcDisplay.classList.add('wrong');
+    setTimeout(()=>{ pcInput=''; updatePcDisplay(); },700);
+  }
+}
+
+/* ── EMERGENCY ── */
+btnEmg.addEventListener('click',()=>{
+  getAudio();
+  if(!emergencyActive){
+    emergencyActive=true; isMoving=false;
+    car.classList.remove('moving'); targetQueue=[]; missionActive=false;
+    missionEl.textContent='🚨 CALL FOR HELP!'; missionBox.classList.remove('secret-mission');
+    emgOverlay.classList.add('active'); btnEmg.classList.add('alarming');
+    btnEmg.innerHTML='✅<br>OK';
+    setStatus('🚨 EMERGENCY STOP — HELP IS COMING!','emergency');
+    stopMusic(); soundEmgStart(); updateBtns();
+  } else {
+    emergencyActive=false;
+    emgOverlay.classList.remove('active'); btnEmg.classList.remove('alarming');
+    btnEmg.innerHTML='🚨<br>EMRG'; soundEmgStop();
+    rescues++; document.getElementById('score-rescues').textContent=rescues;
+    setStatus(`ALL CLEAR! FLOOR ${currentFloor} — SAFE`);
+    animateDoorsOpen().then(()=>setStatus(`FLOOR ${currentFloor} — DOORS OPEN`));
+    setTimeout(assignMission,1800); updateBtns();
+  }
+});
+
+/* ── MOVEMENT ── */
+function floorPos(n){ return [SECRET_ID,1,2,3,4,5,6,7,8,9,10].indexOf(n); }
+
+async function moveTo(target, isQueued=false){
+  if(emergencyActive) return;
+
+  if(target===currentFloor){
+    const onSec=isSecretFloor(target)&&secretUnlocked;
+    if(!doorsOpen){ setStatus('DOORS OPENING...'); await animateDoorsOpen(); }
+    ding(onSec);
+    setStatus(`FLOOR ${target==='B'?'✦ SECRET':target} — DOORS OPEN`,onSec?'secret':'normal');
+    checkMission(target); return;
+  }
+
+  const going=floorPos(target)>floorPos(currentFloor)?'up':'down';
+  if(doorsOpen){ setStatus('CLOSING DOORS...'); await animateDoorsClose(); }
+  if(emergencyActive) return;
+
+  isMoving=true; car.classList.add('moving');
+  btnOpen.disabled=true; btnClose.disabled=true;
+  if(!isQueued) startMusic();
+
+  const allOrdered=[SECRET_ID,1,2,3,4,5,6,7,8,9,10];
+  const fromIdx=allOrdered.indexOf(currentFloor), toIdx=allOrdered.indexOf(target);
+  const step=toIdx>fromIdx?1:-1;
+  let idx=fromIdx;
+
+  while(idx!==toIdx){
+    if(emergencyActive){car.classList.remove('moving');isMoving=false;stopMusic();return;}
+    setStatus(`${going==='up'?'▲':'▼'} ${going.toUpperCase()} — FLOOR ${isSecretFloor(target)?'✦ SECRET':target}`);
+    soundFloorStep(); await sleep(320);
+    idx+=step; currentFloor=allOrdered[idx];
+    placeCar(currentFloor); setFloorActive(currentFloor); updateBtns();
+    const ind=document.getElementById(`ind-${currentFloor}`);
+    if(ind){ind.classList.add('lit');setTimeout(()=>ind.classList.remove('lit'),270);}
+
+    if(idx!==toIdx&&!emergencyActive){
+      car.classList.remove('moving');
+      ding(); await animateDoorsOpen(); await sleep(300); await animateDoorsClose(); await sleep(200);
+      car.classList.add('moving');
+    }
+  }
+
+  car.classList.remove('moving'); isMoving=false;
+  stopMusic();
+  if(emergencyActive) return;
+
+  const onSecret=isSecretFloor(currentFloor)&&secretUnlocked;
+  ding(onSecret);
+  setStatus(onSecret?'✦ SECRET FLOOR — WELCOME!':`DING! FLOOR ${currentFloor} — OPENING DOORS`,onSecret?'secret':'normal');
+  await sleep(300);
+  await animateDoorsOpen();
+  setStatus(onSecret?'🔮 SECRET LAB — EXPLORE!':`FLOOR ${currentFloor} — DOORS OPEN`,onSecret?'secret':'normal');
+  trips++; document.getElementById('score-trips').textContent=trips;
+  if(onSecret){confetti(true);stars+=2;document.getElementById('score-stars').textContent=stars;missionEl.textContent='🔮 You found the secret lab! +2 stars!';}
+  else checkMission(currentFloor);
+  updateBtns(); btnClose.disabled=false;
+
+  if(targetQueue.length>0&&!emergencyActive){
+    const next=targetQueue.shift(); updateBtns(); await sleep(500); await moveTo(next,true);
+  }
+}
+
+async function actuallyMoveToSecret(){
+  if(!secretUnlocked) return;
+  if(!isMoving) moveTo(SECRET_ID); else{targetQueue=[SECRET_ID];updateBtns();}
+}
+
+function pressFloor(n){
+  if(emergencyActive) return;
+  getAudio();
+  if(isSecretFloor(n)&&!secretUnlocked){openPasscodeModal();return;}
+  if(n===currentFloor&&!isMoving){if(!doorsOpen){animateDoorsOpen().then(()=>setStatus(`FLOOR ${n} — DOORS OPEN`));}return;}
+  if(targetQueue.includes(n)) return;
+  if(!isMoving) moveTo(n); else{targetQueue.push(n);setStatus(`FLOOR ${n} ADDED TO QUEUE`);}
+  updateBtns();
+}
+
+btnOpen.addEventListener('click',async()=>{
+  if(!doorsOpen&&!isMoving&&!emergencyActive){
+    getAudio(); setStatus('DOORS OPENING...');
+    await animateDoorsOpen(); setStatus(`FLOOR ${currentFloor} — DOORS OPEN`);
+  }
+});
+btnClose.addEventListener('click',async()=>{
+  if(doorsOpen&&!isMoving&&!emergencyActive){
+    getAudio(); setStatus('CLOSING DOORS...');
+    await animateDoorsClose(); setStatus(`FLOOR ${currentFloor} — READY`); updateBtns();
+  }
+});
+document.getElementById('btn-bell').addEventListener('click',()=>{
+  getAudio(); soundBell();
+  const msgs=['DING!','🔔 DING DONG!','🎵 ELEVATOR MUSIC!','...DING!','⬆️ GOING UP!'];
+  setStatus(msgs[Math.floor(Math.random()*msgs.length)]);
+});
+
+/* ── INIT ── */
+const _dl=document.getElementById('car-door-l'), _dr=document.getElementById('car-door-r');
+_dl.style.transition='none'; _dr.style.transition='none';
+_dl.style.transform='translateX(-100%)'; _dr.style.transform='translateX(100%)';
+doorsOpen=true;
+updateBtns(); btnClose.disabled=false; btnOpen.disabled=true;
+
+/* ── PRIVACY BANNER ── */
+(function() {
+  if (localStorage.getItem('privacy-accepted')) {
+    document.getElementById('privacy-banner').style.display = 'none';
+  }
+  document.getElementById('privacy-accept').addEventListener('click', function() {
+    localStorage.setItem('privacy-accepted', '1');
+    document.getElementById('privacy-banner').style.display = 'none';
+  });
+})();
+</script>
+</body>
+</html>
